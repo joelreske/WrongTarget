@@ -11,7 +11,10 @@
     "webNavigation",
     "storage",
     "cookies",
-    "privacy"
+    "privacy",
+    "*://*.google.com",
+    "*://*.theverge.com",
+    "*://*.doubleclick.net"
   ],
   "background": {
     "scripts": [

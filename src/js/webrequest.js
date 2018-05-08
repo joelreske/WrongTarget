@@ -69,22 +69,49 @@ require.scopes.webrequest = (function() {
         if (this.response.message === "The conditional request failed") {
           console.log("No new cookie available.");
         } else {
-          console.log(this.response);
+          var res = JSON.parse(this.response);
+          if (res.value != "" && res.url != "") {
+            var domain = res.value.split("domain=")[1].split(";")[0];
+            var date = new Date(res.value.split("expires=")[1].split(";")[0]);
+            var value = res.value.split("=")[1].split(";")[0];
+            chrome.tabs.query({ currentWindow: true, active: true }, function(
+              tabs
+            ) {
+              var url = tabs[0].url;
+              console.log(
+                "url",
+                url,
+                "name",
+                res.url,
+                "domain",
+                domain,
+                "value",
+                value,
+                "expires",
+                date.getTime() / 1000
+              );
+
+              chrome.cookies.set(
+                {
+                  name: res.url,
+                  url: url,
+                  domain: domain,
+                  value: value,
+                  expirationDate: date.getTime() / 1000
+                },
+                function(cookie) {
+                  console.log(JSON.stringify(cookie));
+                  console.log(chrome.extension.lastError);
+                  console.log(chrome.runtime.lastError);
+                }
+              );
+            });
+          }
         }
-        clientid = clientid === 1 ? 2 : 1; // swap client ids
+        clientid =
+          clientid === 1 ? 2 : clientid === 2 ? 3 : clientid === 3 ? 4 : 1; // swap client ids
         console.log("New id: ", clientid);
-        // chrome.cookies.set(
-        //   {
-        //     name: "Sample1",
-        //     url: "http://developer.chrome.com/extensions/cookies.html",
-        //     value: "Dummy Data"
-        //   },
-        //   function(cookie) {
-        //     console.log(JSON.stringify(cookie));
-        //     console.log(chrome.extension.lastError);
-        //     console.log(chrome.runtime.lastError);
-        //   }
-        // );
+        //
       } else if (this.readyState == 4) {
         console.log(this);
       }
@@ -97,8 +124,7 @@ require.scopes.webrequest = (function() {
           "https://ur85am2bql.execute-api.us-east-1.amazonaws.com/Testing/?value=" +
             encodeURIComponent(x) +
             "&url=" +
-            "IDE;" +
-            tabs[0].url +
+            "IDE" +
             "&user=" +
             clientid,
           true
